@@ -1,49 +1,55 @@
-import { useMotionValue, useTransform, motion } from "framer-motion";
+/* eslint-disable react/no-unknown-property */
+import { useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useTexture } from "@react-three/drei";
 
-function PerspectiveBoxDrag(props) {
-  const { style, ...rest } = props;
+function BoxWithDrag() {
+  const [dragging, setDragging] = useState(false);
+  const boxRef = useRef();
+  const texture = useTexture("/prtf-1.jpg");
 
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-100, 100], [60, -60]);
-  const rotateY = useTransform(x, [-100, 100], [-60, 60]);
+  const handlePointerDown = () => setDragging(true);
+  const handlePointerUp = () => setDragging(false);
+
+  useFrame(() => {
+    if (dragging && boxRef.current) {
+      const { x, y } = boxRef.current.rotation;
+      boxRef.current.rotation.set(x + 0.01, y + 0.01, 0);
+    }
+  });
 
   return (
-    <div
-      className="bg-red-500"
-      style={{
-        width: "100vw",
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        perspective: 800,
-        ...style,
+    <mesh
+      ref={boxRef}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerOut={handlePointerUp}
+      onPointerMove={(e) => {
+        if (dragging) {
+          const { movementX, movementY } = e;
+          boxRef.current.rotation.y += movementX * 0.01;
+          boxRef.current.rotation.x -= movementY * 0.01;
+        }
       }}
-      {...rest}
+      scale={[1, 1, 1]}
+      rotation={[0, 0, 0]}
     >
-      <motion.div
-        style={{
-          width: '50vh',
-          height: '50vh',
-          borderRadius: 30,
-          backgroundColor: "#fff",
-          position: "relative",
-          x,
-          y,
-          rotateX,
-          rotateY,
-          cursor: "grab",
-          backgroundImage: "url('/prtf-1.jpg')",
-          backgroundSize: "cover", 
-          backgroundPosition: "center",
-        }}
-        drag
-        dragConstraints={{ top: 0, right: 0, bottom: 0, left: 0 }}
-        dragElastic={0.6}
-        whileTap={{ cursor: "grabbing" }}
-      />
-    </div>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial map={texture} />
+    </mesh>
+  );
+}
+
+function PerspectiveBoxDrag() {
+  return (
+    <Canvas
+      camera={{ position: [0, 0, 5], fov: 25 }}
+      style={{ height: "100vh", width: "100vw" }}
+    >
+      <ambientLight intensity={0.3} />
+      <directionalLight position={[10, 10, 5]} intensity={1} />
+      <BoxWithDrag />
+    </Canvas>
   );
 }
 
