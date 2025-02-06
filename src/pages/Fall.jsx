@@ -1,13 +1,12 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { gsap } from "gsap";
-import Draggable from "gsap/Draggable"; // Import the Draggable plugin
+import Draggable from "gsap/Draggable";
+import "../App.css";
 
-// Register the Draggable plugin with GSAP
 gsap.registerPlugin(Draggable);
 
 const emojis = ["🍁", "🎃", "🍂", "👻", "🦇"];
 
-// Generate emojis only once using useMemo
 const generateEmojis = (count = 40) =>
   Array.from({ length: count }).map((_, index) => ({
     id: index,
@@ -18,13 +17,12 @@ const generateEmojis = (count = 40) =>
     rotation: Math.random() * 360,
   }));
 
-function Fall() {
-  // Use useMemo to memoize the generated emojis
+const Fall = () => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const fallingEmojis = useMemo(() => generateEmojis(), []);
   const emojiRefs = useRef([]);
 
   useEffect(() => {
-    // Animate all emojis with GSAP
     emojiRefs.current.forEach((el, i) => {
       if (el) {
         gsap.fromTo(
@@ -43,33 +41,29 @@ function Fall() {
             delay: fallingEmojis[i]?.delay,
             scale: 1,
             onComplete: () => {
-              // Make the emoji draggable once the animation is complete
               Draggable.create(el, {
                 type: "x,y",
-                bounds: "body", // Restrict dragging within the body
-                edgeResistance: 0.65, // Resistance when dragging near the edges
-                throwProps: true, // Enable physics-based throwing
+                bounds: "body",
+                edgeResistance: 0.65,
+                throwProps: true,
                 onDragEnd: (drag) => {
-                  // Check if the emoji is thrown out of the screen
-                  const rect = el.getBoundingClientRect();
                   const screenWidth = window.innerWidth;
                   const screenHeight = window.innerHeight;
 
-                  if (
-                    rect.right < 0 ||
-                    rect.left > screenWidth ||
-                    rect.bottom < 0 ||
-                    rect.top > screenHeight
-                  ) {
-                    // Remove the emoji from the DOM after it goes out of the screen
-                    gsap.to(el, {
-                      duration: 1,
-                      opacity: 0,
-                      onComplete: () => {
-                        el.remove();
-                      },
-                    });
-                  }
+                  const targetX =
+                    drag.x > screenWidth / 2 ? screenWidth + 100 : -100;
+                  const targetY =
+                    drag.y > screenHeight / 2 ? screenHeight + 100 : -100;
+
+                  gsap.to(el, {
+                    duration: 1,
+                    x: targetX,
+                    y: targetY,
+                    opacity: 0,
+                    onComplete: () => {
+                      el.remove();
+                    },
+                  });
                 },
               });
             },
@@ -79,8 +73,27 @@ function Fall() {
     });
   }, [fallingEmojis]);
 
+  useEffect(() => {
+    const moveAnim = (e) => {
+      const { clientX, clientY } = e;
+      setMousePos({ x: clientX, y: clientY });
+    };
+
+    document.body.addEventListener("mousemove", moveAnim);
+    return () => document.body.removeEventListener("mousemove", moveAnim);
+  }, []);
+
   return (
     <div className="relative w-full h-screen overflow-hidden bg-blue-100 flex justify-center items-center">
+      <div
+        className="absolute bg-blue-500 rounded-full pointer-events-none"
+        style={{
+          left: mousePos.x - 20,
+          top: mousePos.y - 20,
+          height: "40px",
+          width: "40px",
+        }}
+      ></div>
       <h1 className="text-6xl font-bold z-10">WEB</h1>
       {fallingEmojis.map(({ id, emoji, left }, index) => (
         <div
@@ -97,6 +110,6 @@ function Fall() {
       ))}
     </div>
   );
-}
+};
 
 export default Fall;
