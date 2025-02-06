@@ -1,12 +1,12 @@
 /* eslint-disable react/no-unknown-property */
 import { useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useTexture } from "@react-three/drei";
+import { useTexture } from "@react-three/drei"; 
 
 function BoxWithDrag() {
   const [dragging, setDragging] = useState(false);
   const boxRef = useRef();
-  const texture = useTexture("/prtf-1.jpg");
+  const texture = useTexture("/prtf-1.jpg"); 
 
   const handlePointerDown = () => setDragging(true);
   const handlePointerUp = () => setDragging(false);
@@ -21,9 +21,8 @@ function BoxWithDrag() {
   return (
     <mesh
       ref={boxRef}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerOut={handlePointerUp}
+      onPointerEnter={handlePointerDown}
+      onPointerLeave={handlePointerUp}
       onPointerMove={(e) => {
         if (dragging) {
           const { movementX, movementY } = e;
