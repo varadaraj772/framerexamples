@@ -9,9 +9,9 @@ function App() {
     <>
       {/* <Stack/> */}
       {/* <Album/> */}
-      <Fall />
+      {/* <Fall />
       <PerspectiveBoxDrag />
-      <CursorTrack />
+      <CursorTrack /> */}
       <InteractuveCircle />
     </>
   );

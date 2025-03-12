@@ -54,7 +54,6 @@ const Fall = () => {
                     drag.x > screenWidth / 2 ? screenWidth + 100 : -100;
                   const targetY =
                     drag.y > screenHeight / 2 ? screenHeight + 100 : -100;
-
                   gsap.to(el, {
                     duration: 1,
                     x: targetX,
